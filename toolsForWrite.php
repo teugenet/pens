@@ -209,5 +209,103 @@ $mp->write("asjdflknsadflkdsnflsdglsdmg,lsdk;fljaskndjasbhdjhbfdsmg;gjmflknkjbhg
 $mp->click();
 $mp->finishWrite();*/
 
+class MultiColorPen extends MechanicalPencil{
+	protected $rod=array("blue"=>256,"red"=>256,"black"=>256,"green"=>256);
+
+	public function __set($color, $fullWrite=0){
+		is_numeric($fullWrite)==true && $fullWrite>0 ? $this->rod[$color] = $fullWrite : $this->rod[$color] = $this->fullWrite;
+
+		return $this;
+	}
+
+	public function __get($color) {
+	    if (array_key_exists($color, $this->rod)) {
+	            return $this->rod[$color];
+	    }
+	}
+
+	public function choose($color){
+		if(isset($this->rod[$color])==true){
+			$this->color=$color;
+			$this->leftWrite=$this->rod[$color];
+		}
+		if(!$this->isWriteable){$this->isWriteable=true;}
+	}
+
+	public function changeRod($color=null, $length=null){
+		if(is_string($color)==true && strlen($color)>2){
+			if(isset($this->rod[$color])==false){
+				print('There is no such color. Try: $instanceOfClass->color or $instanceOfClass->color=$symbolsInRod to add new rod into
+					pen.');
+			}
+		}
+		(is_numeric($length) && $length>=1) ? $this->rod[$color] = round($length,0) : $this->rod[$color] = $this->fullWrite;
+		parent::addInk();
+	}
+
+	public function removeRot($color=null){
+		if(is_string($color)==true && strlen($color)>2){
+			if(isset($this->rod[$color])==true) {unset($this->rod[$color]);}
+		}
+	}
+
+	public function offPen(){
+		$this->isWriteable=false;
+	}
+
+	public function write($text=null){
+		parent::write($text);
+
+		if($this->leftWrite==0) {$this->isWriteable = false;}	
+	}
+
+	public function finishWrite(){
+		parent::write($this->unfinished);
+
+		if($this->charactersToClick==0) {$this->isWriteable = false;}
+	}
+
+	protected function canBeWrite($text){
+		$stringSymbols = array("toWrite"=>"","count"=>0);
+		$count=0;
+
+		if($this->isWriteable==false) {return $stringSymbols;}
+
+		if($this->leftWrite>0){
+			for($a=0;$a<strlen($text);$a++){
+				$character=$text[$a];
+				if(preg_match("/[[:space:]]+/", $character)==false) {
+					if(preg_match("/[[:alpha:]]+/", $character)==true) {
+						$count++;
+					}
+						else {
+							$character.=$text[++$a];
+							$count++;
+						}
+				}
+
+				$stringSymbols["toWrite"].=$character;
+				$stringSymbols["count"]=$count;
+				if($this->leftWrite==$count) {break;}
+			}
+		}
+
+		$this->charactersToClick-=$stringSymbols["count"];
+
+		if($stringSymbols["toWrite"]!=$text){ $this->unfinished=str_replace($stringSymbols["toWrite"], "", $text);}
+			else {$this->unfinished="";}
+		return $stringSymbols;
+	}
+}
+
+/*$mcp = new MultiColorPen();
+$mcp->offPen();
+$mcp->gold=2;
+$mcp->changeRod("red",2);
+$mcp->choose("red");
+$mcp->write("sad");
+$mcp->changeRod("red",2);
+$mcp->choose("gold");
+$mcp->finishWrite();*/
 
 ?>
